@@ -1,49 +1,110 @@
 var vows = require("vows"),
     assert = require("assert"),
-    memoryStore = require("../lib/sessions").stores.memory,
+    memoryStore = require("../lib/store/memory"),
+    store = new memoryStore(),
     dup_id = "dupid";
 
 vows.describe("memory store").addBatch({
-	"a clean memory store": {
-		topic: new memoryStore(),
-		"should have no uids initially": function (topic) {
-			assert.isArray(topic.uids());
-			assert.equal(topic.uids().length, 0);
+	"getting initial uids": {
+		topic: function () {
+			store.uids(this.callback);
 		},
-		"add duplicated uids should not be possible": function (topic) {
-			assert.isTrue(topic.add(dup_id, { dup: false }));
-			assert.isFalse(topic.add(dup_id, { dup: true }));
+		"should come empty": function (uids) {
+			assert.isArray(uids);
+			assert.equal(uids.length, 0);
+		}
+	}
+}).addBatch({
+	"adding an uid": {
+		topic: function () {
+			store.add(dup_id, { dup: false }, this.callback);
 		},
-		"changing current uid data is possible": function (topic) {
-			assert.isTrue(topic.set(dup_id, { dup: true }));
+		"should be ok": function (err, data) {
+			assert.isNull(err);
+			assert.deepEqual(data, { dup: false });
+		}
+	}
+}).addBatch({
+	"but adding again": {
+		topic: function () {
+			store.add(dup_id, { dup: true }, this.callback);
 		},
-		"changing unknown uid data is impossible": function (topic) {
-			assert.isFalse(topic.set(dup_id + "-unknown", { dup: true }));
+		"should not be ok": function (err, data) {
+			assert.isNotNull(err);
+		}
+	}
+}).addBatch({
+	"changing current uid data is possible": {
+		topic: function () {
+			store.set(dup_id, { dup: true }, this.callback);
 		},
-		"previous uid data should be ok": function (topic) {
-			assert.isTrue(topic.get(dup_id, "dup"));
-			assert.deepEqual(topic.get(dup_id), { dup: true });
+		"should be ok": function (err, _) {
+			assert.isNull(err);
+		}
+	}
+}).addBatch({
+	"changing unknown uid data is impossible": {
+		topic: function () {
+			store.set(dup_id + "-unknown", { dup: true }, this.callback);
 		},
-		"previous uid unknown data should return null": function (topic) {
-			assert.isNull(topic.get(dup_id, "unknown key"));
+		"should not be ok": function (err, _) {
+			assert.isNotNull(err);
+		}
+	}
+}).addBatch({
+	"previous uid data": {
+		topic: function () {
+			store.get(dup_id, this.callback);
 		},
-		"only one uid should be present now": function (topic) {
-			assert.isArray(topic.uids());
-			assert.equal(topic.uids().length, 1);
+		"should be ok": function (data) {
+			assert.deepEqual(data, { dup: true });
+		}
+	}
+}).addBatch({
+	"previous uid unknown data": {
+		topic: function () {
+			store.get(dup_id + "-unknown", this.callback);
 		},
-		"removing a property should be ok": function (topic) {
-			assert.isTrue(topic.remove(dup_id, "dup"));
-			assert.isNull(topic.get(dup_id, "dup"));
-			assert.isEmpty(topic.get(dup_id));
+		"should return error": function (err, _) {
+			assert.isNotNull(err);
+		}
+	}
+}).addBatch({
+	"the total uids saved": {
+		topic: function () {
+			store.uids(this.callback);
 		},
-		"removing an uid should be ok": function (topic) {
-			assert.isTrue(topic.remove(dup_id));
-			assert.isNull(topic.get(dup_id, "dup"));
-			assert.isNull(topic.get(dup_id));
+		"should now be one": function (uids) {
+			assert.isArray(uids);
+			assert.equal(uids.length, 1);
+		}
+	}
+}).addBatch({
+	"removing a property": {
+		topic: function () {
+			store.remove(dup_id, "dup", this.callback);
 		},
-		"no uids should be in store now": function (topic) {
-			assert.isArray(topic.uids());
-			assert.equal(topic.uids().length, 0);
+		"should be ok": function (err, _) {
+			assert.isNull(err);
+		}
+	}
+}).addBatch({
+	"removing an uid": {
+		topic: function () {
+			store.remove(dup_id, this.callback);
+		},
+		"should be ok": function (err, _) {
+			assert.isNull(err);
+		}
+	}
+}).addBatch({
+	"the total uids saved": {
+		topic: function () {
+			store.uids(this.callback);
+		},
+		"should now be zero": function (uids) {
+			assert.isArray(uids);
+			assert.equal(uids.length, 0);
 		}
 	}
 }).export(module);

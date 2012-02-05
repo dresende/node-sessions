@@ -16,7 +16,7 @@
  * the next session to expire.
  **/
 var sessions = require("../lib/sessions"),
-    Sessions = new sessions(sessions.stores.memory, { expires: 5 });
+    Sessions = new sessions(sessions.stores.delayedmemory, { expires: 5 });
 
 var session1 = Sessions.create("session1"),
     session2 = Sessions.create("session2"),

@@ -5,28 +5,28 @@ var vows = require("vows"),
     session;
 
 vows.describe("sessions").addBatch({
-	"a clean session handler": {
+	"a session handler": {
 		topic: new sessions(),
 		"should have no sessions initially": function (topic) {
 			assert.strictEqual(topic.total(), 0);
 		},
-		"should be able to create a new session": function (topic) {
-			session = topic.create(sessid);
-
-			assert.isObject(session);
-			assert.isNotNull(session);
-		},
-		"new session should have no data": function (topic) {
-			assert.isObject(session.get());
-			assert.isNull(session.get("undefined"));
-		},
-		"new session should have defined uid": function (topic) {
-			assert.strictEqual(session.uid(), sessid);
-		},
-		"expiring session should clean it": function (topic) {
-			session.expire();
-
-			assert.strictEqual(topic.total(), 0);
+		"creating a new session": {
+			topic: function (sessions) {
+				sessions.create(sessid, this.callback);
+			},
+			"should be ok": function (err, session) {
+				assert.isNull(err);
+				assert.isObject(session);
+				assert.isFunction(session.get);
+				assert.isFunction(session.set);
+				assert.isFunction(session.refresh);
+				assert.isFunction(session.expire);
+				assert.isFunction(session.expires);
+				assert.isFunction(session.uid);
+			},
+			"uid should be the same used": function (err, session) {
+				assert.equal(session.uid(), sessid);
+			}
 		}
 	},
 	"uid generator": {
