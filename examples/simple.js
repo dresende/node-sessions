@@ -16,16 +16,26 @@
  * the next session to expire.
  **/
 var sessions = require("../lib/sessions"),
-    Sessions = new sessions(sessions.stores.delayedmemory, { expires: 5 });
-
-var session1 = Sessions.create("session1"),
-    session2 = Sessions.create("session2"),
-    session3 = Sessions.create(/* name automatically generated */).refresh(8),
+    Sessions = new sessions(sessions.stores.memory, { expires: 5 }),
     intervalId = null;
 
-console.log("* created session '%s'", session1.uid());
-console.log("* created session '%s'", session2.uid());
-console.log("* created session '%s'", session3.uid());
+Sessions.create("session1", function (_, session1) {
+	console.log("* created session '%s'", session1.uid());
+
+	intervalId = setInterval(function () {
+		session1.refresh();
+	}, 1000);
+
+	Sessions.create("session2", function (_, session2) {
+		console.log("* created session '%s'", session2.uid());
+
+		Sessions.create(/* name automatically generated */ function (_, session3) {
+			console.log("* created session '%s'", session3.uid());
+
+			session3.refresh(8);
+		});
+	});
+});
 
 Sessions.on("expired", function (uid) {
 	console.log("! session expired:", uid);
@@ -37,7 +47,3 @@ Sessions.on("expired", function (uid) {
 Sessions.on("expirecheck", function () {
 	console.log("* checking session expiration..");
 });
-
-intervalId = setInterval(function () {
-	session1.refresh();
-}, 1000);

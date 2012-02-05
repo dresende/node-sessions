@@ -2,6 +2,7 @@ var vows = require("vows"),
     assert = require("assert"),
     memoryStore = require("../lib/store/memory"),
     store = new memoryStore(),
+    testMeta = { meta: "test" },
     dup_id = "dupid";
 
 vows.describe("memory store").addBatch({
@@ -17,35 +18,36 @@ vows.describe("memory store").addBatch({
 }).addBatch({
 	"adding an uid": {
 		topic: function () {
-			store.add(dup_id, { dup: false }, this.callback);
+			store.add(dup_id, testMeta, { dup: false }, this.callback);
 		},
-		"should be ok": function (err, data) {
+		"should be ok": function (err, meta, data) {
 			assert.isNull(err);
+			assert.deepEqual(meta, testMeta);
 			assert.deepEqual(data, { dup: false });
 		}
 	}
 }).addBatch({
 	"but adding again": {
 		topic: function () {
-			store.add(dup_id, { dup: true }, this.callback);
+			store.add(dup_id, testMeta, { dup: true }, this.callback);
 		},
 		"should not be ok": function (err, data) {
 			assert.isNotNull(err);
 		}
 	}
 }).addBatch({
-	"changing current uid data is possible": {
+	"changing current uid data": {
 		topic: function () {
-			store.set(dup_id, { dup: true }, this.callback);
+			store.set(dup_id, {}, { dup: true }, this.callback);
 		},
 		"should be ok": function (err, _) {
 			assert.isNull(err);
 		}
 	}
 }).addBatch({
-	"changing unknown uid data is impossible": {
+	"changing unknown uid data": {
 		topic: function () {
-			store.set(dup_id + "-unknown", { dup: true }, this.callback);
+			store.set(dup_id + "-unknown", {}, { dup: true }, this.callback);
 		},
 		"should not be ok": function (err, _) {
 			assert.isNotNull(err);
@@ -56,7 +58,9 @@ vows.describe("memory store").addBatch({
 		topic: function () {
 			store.get(dup_id, this.callback);
 		},
-		"should be ok": function (data) {
+		"should be ok": function (err, meta, data) {
+			assert.isNull(err);
+			assert.deepEqual(meta, testMeta);
 			assert.deepEqual(data, { dup: true });
 		}
 	}
