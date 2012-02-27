@@ -16,7 +16,7 @@
  * the next session to expire.
  **/
 var sessions = require("../lib/sessions"),
-    Sessions = new sessions(sessions.stores.memory, { expires: 5 }),
+    Sessions = new sessions(null, { expires: 5 }),
     intervalId = null;
 
 Sessions.create("session1", function (_, session1) {
