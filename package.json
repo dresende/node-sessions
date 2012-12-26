@@ -1,6 +1,6 @@
 {
 	"name"        : "sessions",
-	"version"     : "0.0.2-4",
+	"version"     : "0.0.2-5",
 	"description" : "NodeJS session management",
 	"keywords"    : [ "session", "cookie" ],
 	"author"      : "Diogo Resende <dresende@thinkdigital.pt>",
@@ -23,6 +23,9 @@
 	"devDependencies": {
 		"vows": "0.6.x"
 	},
+    "dependencies": {
+        "mysql": "0.9.6"
+    },
 	"scripts": {
 		"test": "vows --spec tests/*"
 	}
