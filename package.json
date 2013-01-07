@@ -1,6 +1,6 @@
 {
 	"name"        : "sessions",
-	"version"     : "0.0.2-5",
+	"version"     : "0.0.2-6",
 	"description" : "NodeJS session management",
 	"keywords"    : [ "session", "cookie" ],
 	"author"      : "Diogo Resende <dresende@thinkdigital.pt>",
